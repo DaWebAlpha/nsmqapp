@@ -1,4 +1,16 @@
-# Enterprise Logging Strategy: Infrastructure Documentation
+# Core Infrastructure Modules Documentation
+
+This document provides a comprehensive overview of the core infrastructure modules used in the Node.js enterprise backend. All modules are located in the src/core folder.
+
+The modules covered include:
+
+## Logger (logger.js) – Enterprise logging strategy
+
+## MongoDB (database.js) – Centralized connection engine using Mongoose
+
+## Redis (redis.js) – High-performance in-memory store for sessions, rate-limiting, and temporary state
+
+Each module includes purpose, configuration, operational guidelines, and production hardening considerations.
 
 
 ### 1. Logger Selection Strategy
@@ -721,6 +733,110 @@ This allows the module to be imported and invoked during application bootstrap.
 
 
 
+
+
+
+Redis Connection Layer Documentation
+1. Overview
+
+The Redis Connection Layer provides a centralized interface for connecting to Redis, which is used for:
+
+Rate-limiting login attempts
+
+Session and token tracking
+
+Temporary in-memory state storage
+
+Security & Compliance Rationale
+
+Brute-force mitigation: Requires fast, in-memory counters for login attempts
+
+Reliability monitoring: Redis failures must be logged and immediately visible
+
+Fail-safe design: Critical authentication flows should fail gracefully if Redis is unavailable
+
+Module: src/core/redis
+Compliance: SOC2 (Availability & Security), NIST (Infrastructure Monitoring)
+
+2. Initialization
+import Redis from 'ioredis';
+import config from '../config/config.js';
+import { system_logger } from './logger.js';
+
+const redis = new Redis(config.redis_uri);
+
+Purpose
+
+Establish a persistent, high-performance connection to Redis using the configured URL
+
+Use ioredis for advanced connection handling, failover support, and cluster awareness
+
+Enterprise Benefit
+
+Centralized connection management
+
+Supports enterprise-scale session and token operations
+
+Simplifies audit logging and monitoring
+
+3. Connection Event Handlers
+3.1 Success Handler
+redis.on('connect', () => {
+    system_logger.info("Redis connected successfully");
+});
+
+Purpose
+
+Log every successful connection for audit traceability
+
+Confirms infrastructure is available and operational
+
+Enterprise Benefit
+
+Immediate visibility into system readiness
+
+Supports compliance audits and operational monitoring
+
+3.2 Error Handler
+redis.on("error", (err) => {
+    system_logger.error({ error: err.message }, "Could not connect Redis");
+});
+
+Purpose
+
+Capture Redis connection failures immediately
+
+Prevent silent failures that can compromise authentication or rate-limiting
+
+Include full error stack for rapid incident response
+
+Enterprise Benefit
+
+Enables proactive monitoring and alerting
+
+Reduces MTTR (Mean Time to Recovery) for Redis-related outages
+
+Ensures critical flows degrade gracefully instead of failing silently
+
+4. Operational Guidelines
+
+Retry Logic: Consider using built-in ioredis reconnection strategies for transient network issues
+
+Monitoring: Integrate with monitoring tools (Prometheus, Datadog) to track connection counts and latency
+
+Failover: For high availability, use Redis Cluster or Sentinel
+
+Security: Ensure Redis credentials are encrypted and not hard-coded; use environment variables
+
+5. Enterprise Hardening Considerations
+
+Connection Pooling: Configure multiple connections if Redis is heavily used by multiple processes
+
+Timeouts: Set connectTimeout and maxRetriesPerRequest to avoid hanging operations
+
+Logging: Log all errors to secure audit logs
+
+Fail-Fast Design: If Redis is critical (e.g., for authentication), fail early to prevent partial service startup
 
 
 
