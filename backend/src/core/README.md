@@ -142,7 +142,43 @@ Isolation allows each logger to scale independently.
 
 ### 4. Code Architecture Overview
 
-#### 4.1 Environment Detection and Log Level Control
+
+#### 4.1 DEPENDENCIES AND IMPORTED FILES
+
+``` javascript
+import pino from 'pino';
+import fs from 'node:fs';
+import path from 'node:path';
+import config from '../config/config.js';
+Use code with caution.
+```
+
+
+**Detailed Component Breakdown**
+
+**import pino from 'pino'**
+* The Engine: This is the primary logging library.
+* Why it's here: We use Pino because it is a low-overhead logger. 
+* In an enterprise environment, we cannot allow the logging process to consume more CPU than the actual business logic. 
+* It handles the generation of JSON logs and manages the worker threads that offload I/O tasks.
+
+**import fs from 'node:fs'**
+* The File System: A native Node.js module used to interact with the server's physical storage.
+* Why it's here: This is responsible for Directory Provisioning. Before any log is written, fs checks if the folders exist. 
+* If they are missing, it creates them. This prevents the application from crashing with a fatal ENOENT error.
+
+**import path from 'node:path'**
+* The Navigator: A native Node.js utility for handling file and directory paths.
+* Why it's here: Different operating systems use different path separators (Windows uses \, while Linux/Unix uses /). path.join() ensures that our log paths (e.g., logs/system/app-info) are cross-platform compatible, meaning the code works the same on a developer's laptop and a production cloud server.
+
+**import config from '../config/config.js'**
+* The Intelligence: This imports our application's centralized settings.
+* Why it's here: It provides the logger with environmental context. 
+* It tells the system whether it is running in Development (where we need noisy debug logs) or Production (where we restrict output to info to save disk space and maximize performance).
+
+---
+
+#### 4.2 Environment Detection and Log Level Control
 
 ```javascript
 const isDevelopment = config.node_env === 'development';
