@@ -214,33 +214,121 @@ This protects system availability during deployment or infrastructure changes.
 
 ---
 
-#### 4.3 Blueprint Factory Pattern
+
+
+### 4.3 Blueprint Factory Pattern
 
 ```javascript
-const blueprint = (filelocation, rollfrequency, fileSize, minLevel = 'info') => { ... }
+const blueprint = (filelocation, rollfrequency, fileSize, minLevel = 'info') => {
+    return {
+        target: 'pino-roll',
+        level: minLevel, 
+        options: {
+            file: path.join(targetdir, filelocation),
+            extension: '.json',
+            frequency: rollfrequency,
+            size: fileSize,
+            mkdir: true,
+            dateFormat: 'yyyy-MM-dd',
+            sync: false // Non-blocking asynchronous I/O
+        }
+    };
+};
 ```
 
-**Purpose**
+### Purpose
 
-* Eliminates configuration duplication
-* Standardizes `pino-roll` setup
-* Enforces consistent naming and rotation policies
-
-Key Configuration Elements:
-
-* `sync: false`
-  Ensures logs are written asynchronously via worker threads.
-
-* `dateFormat: 'yyyy-MM-dd'`
-  Standardizes file naming to enterprise conventions.
-
-Example output:
-
-```
-system/app-info.2026-03-02.log
-```
+* Eliminates repeated configuration for multiple log targets
+* Standardizes `pino-roll` setup across all logging streams
+* Enforces consistent file naming, extension, and rotation policies for enterprise-grade logging
 
 ---
+
+### Key Variables and Configuration
+
+**`filelocation`**
+* Type: `string`
+* Description: Relative path for the log file within `targetdir` (e.g., `'system/app-info'`)
+
+
+**`rollfrequency`**
+* Type: `string`
+* Description: Determines how often the log file rotates (`'daily'`, `'hourly'`, etc.)
+
+
+**`fileSize`**
+
+* Type: `string`
+* Description: Maximum size per log file before rotation (e.g., `'10m'`, `'20m'`)
+
+
+**`minLevel`**
+* Type: `string`
+* Default: `'info'`
+* Description: Minimum log level to write (`'debug'`, `'info'`, `'warn'`, `'error'`)
+
+
+**`target`**
+* Value: `'pino-roll'`
+* Description: Pino transport type for rolling log files
+
+
+**`options.file`**
+* Description: Full path for the log file, constructed using `path.join(targetdir, filelocation)`
+
+
+**`options.extension`**
+* Value: `'.json'`
+* Description: Log file extension for machine-readable JSON output
+
+
+
+**`options.frequency`**
+* Description: How often the file should rotate, passed from `rollfrequency`
+
+
+**`options.size`**
+* Description: Maximum file size before rotation, passed from `fileSize`
+
+
+**`options.mkdir`**
+* Value: `true`
+* Description: Automatically creates directories if they do not exist
+
+
+**`options.dateFormat`**
+* Value: `'yyyy-MM-dd'`
+* Description: Timestamp format included in the file name
+
+
+**`options.sync`**
+* Value: `false`
+* Description: Writes logs asynchronously via worker threads
+
+
+---
+
+### Example Output
+
+```javascript
+blueprint('system/app-info', 'daily', '20m', 'info')
+```
+
+Generates log files like:
+
+```text
+system/app-info.2026-03-02.log
+errors/app-error.2026-03-02.log
+```
+
+**Enterprise Benefit**
+
+* Simplifies adding new log targets without duplicating configuration
+* Enforces compliance with rotation and naming standards
+* Maintains high-performance, asynchronous logging for production environments
+
+---
+
 
 #### 4.4 Multi-Stream Transport Configuration
 
