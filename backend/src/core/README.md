@@ -150,7 +150,7 @@ import pino from 'pino';
 import fs from 'node:fs';
 import path from 'node:path';
 import config from '../config/config.js';
-Use code with caution.
+
 ```
 
 
