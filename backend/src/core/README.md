@@ -4,11 +4,11 @@ This document provides a comprehensive overview of the core infrastructure modul
 
 The modules covered include:
 
-## Logger (logger.js) – Enterprise logging strategy
+### Logger (logger.js) – Enterprise logging strategy
 
-## MongoDB (database.js) – Centralized connection engine using Mongoose
+### MongoDB (database.js) – Centralized connection engine using Mongoose
 
-## Redis (redis.js) – High-performance in-memory store for sessions, rate-limiting, and temporary state
+### Redis (redis.js) – High-performance in-memory store for sessions, rate-limiting, and temporary state
 
 Each module includes purpose, configuration, operational guidelines, and production hardening considerations.
 
